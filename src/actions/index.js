@@ -2,8 +2,8 @@
 
 import { List } from 'immutable';
 
-import { Station, StationT, StationChoice } from '../types';
-import type { State, StationChoiceT } from '../types';
+import { Station, StationChoice } from '../types';
+import type { State, StationT, StationChoiceT } from '../types';
 
 import axios from 'axios';
 import ACCESS_TOKEN from '../../access_token';
@@ -48,9 +48,10 @@ const buildQueryString = (choice: StationChoiceT, direction: string, target: Sta
     return `/fastest/${choice.crsCode}/to/${target.crsCode}`;
   else if (direction === 'from')
     return `/fastest/${target.crsCode}/to/${choice.crsCode}`;
+  throw new Error(`Unsupported direction '${direction}'`)
 }
 
-const decodeFastestResponse = (data: string, target: StationT) => {
+const decodeFastestResponse = (data: Object, target: StationT) => {
   const unavailable = { available: false, details: data };
   if (!data.areServicesAvailable) return unavailable;
   const service = data.departures[0].service;
