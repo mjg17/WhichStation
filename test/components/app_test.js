@@ -1,11 +1,27 @@
 import { renderComponent , expect } from '../test_helper';
-import App from '../../src/components/app';
+import StationsChooser from '../../src/components/stations_chooser';
+import WhichStation from '../../src/components/which_station';
 
-describe('App' , () => {
+describe('StationsChooser' , () => {
   let component;
 
   beforeEach(() => {
-    component = renderComponent(App);
+    component = renderComponent(StationsChooser);
+  });
+
+  it('renders something', () => {
+    expect(component).to.exist;
+  });
+});
+
+describe('WhichStation' , () => {
+  let component;
+
+  beforeEach(() => {
+    component = renderComponent(
+      WhichStation,
+      { match: { params: { choices: 'BRI-35--BPW-25', direction: 'from', target: 'PAD' } } }
+    );
   });
 
   it('renders something', () => {
