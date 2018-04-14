@@ -1,10 +1,23 @@
 // @flow
 
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
-export default class WhichStation extends Component {
-  render() {
+import { getDepartures } from '../actions';
+
+type Props = {
+  match: Object,
+  getDepartures: (string, string, string) => void,
+};
+
+class WhichStation extends Component<Props> {
+  componentDidMount() {
     const { choices, direction, target } = this.props.match.params;
+    this.props.getDepartures(choices, direction, target);
+  }
+
+  render() {
+    const { choices, direction, target } = this.props.match.params; // TMP
     return (
       <div>
         <h1>Which station</h1>
@@ -17,3 +30,9 @@ export default class WhichStation extends Component {
     );
   }
 }
+
+function mapStateToProps(state) {
+    return {};
+}
+
+export default connect(mapStateToProps, { getDepartures })(WhichStation);
