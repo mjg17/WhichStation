@@ -1,10 +1,9 @@
 // @flow
 
-import type { RecordFactory } from 'immutable';
-import { List, Record } from 'immutable';
+import { List } from 'immutable';
 
 import { Station, StationChoice } from '../types';
-import type { StationT, StationChoiceT } from '../types';
+import type { StationChoiceT } from '../types';
 
 export const GET_DEPARTURES = 'GET_DEPARTURES';
 
