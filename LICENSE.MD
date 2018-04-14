@@ -1,6 +1,11 @@
 MIT License
 
+Copyright (c) 2018 Michael Gray
+https://github.com/mjg17/WhichStation
+
+redux-simple-starter framework:
 Copyright (c) 2016 Stephen Grider
+https://github.com/StephenGrider/ReduxSimpleStarter
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
