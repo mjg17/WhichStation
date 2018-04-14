@@ -1,0 +1,14 @@
+{
+  "extends": "react-app",
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "rules": {
+    "jsx-a11y/href-no-hash": "off",
+    "jsx-a11y/anchor-is-valid": ["warn", { "aspects": ["invalidHref"] }]
+  },
+  "globals": {
+    "__DEV__": true
+  }
+}
