@@ -1,18 +1,29 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { createStore, applyMiddleware } from 'redux';
+import { createStore, applyMiddleware, compose } from 'redux';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import Immutable from 'immutable';
 
 import reducers from './reducers';
 
 import StationsChooser from './components/stations_chooser';
 import WhichStation from './components/which_station';
 
-const createStoreWithMiddleware = applyMiddleware()(createStore);
+const useDevtools = process.env.NODE_ENV !== 'production' && typeof window.devToolsExtension === 'function';
+const createStoreWithMiddleware = compose(
+  applyMiddleware(),
+  useDevtools
+    ? window.devToolsExtension({
+        serialize: {
+          immutable: Immutable,
+        },
+      })
+    : f => f
+)(createStore);
 
 ReactDOM.render(
-  <Provider store={createStoreWithMiddleware(reducers, window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__())}>
+  <Provider store={createStoreWithMiddleware(reducers)}>
     <BrowserRouter>
       <Switch>
         <Route exact path="/" component={StationsChooser} />
