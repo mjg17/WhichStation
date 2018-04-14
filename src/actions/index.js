@@ -1,39 +1,33 @@
 // @flow
 
-import type { RecordOf, RecordFactory } from 'immutable';
+import type { RecordFactory } from 'immutable';
 import { List, Record } from 'immutable';
+
+import { Station, StationChoice } from '../types';
+import type { StationT, StationChoiceT } from '../types';
 
 export const GET_DEPARTURES = 'GET_DEPARTURES';
 
-type StationProps = {|
-    crsCode: string,
-    stationName: string,
-|};
+type ActionType = 'GET_DEPARTURES';
+export type Action = {| type: ActionType, payload: any |};
 
-type StationChoiceProps = {|
-  ...StationProps,
-  travelMinutes: number,
-|};
-
-type StationChoice = RecordOf<StationChoiceProps>;
-const makeStationChoice: RecordFactory<StationChoiceProps> = Record({crsCode: '', stationName: '', travelMinutes: 0}, 'StationChoice');
-
-const parseChoices = (choices: string): List<StationChoice> => {
+const parseChoices = (choices: string): List<StationChoiceT> => {
   const stationStrings = choices.split('--');
   const stations = stationStrings.map(s => {
     let crsCode = '', travelMinutes = 0;
     const result = s.match(/^(\w+)-(\d+)$/);
     if (result)
       [ , crsCode, travelMinutes ] = result;
-    return makeStationChoice({ crsCode, travelMinutes: Number(travelMinutes) });
+    return StationChoice({ crsCode, travelMinutes: Number(travelMinutes) });
   });
   return List(stations);
 }
 
 export function getDepartures(choices: string, direction: string, target: string) {
   const stationChoices = parseChoices(choices);
+  const stationTarget = Station({crsCode: target});
   return {
     type: GET_DEPARTURES,
-    payload: { stationChoices, direction, target },
+    payload: { choices: stationChoices, direction, target: stationTarget },
   };
 }
