@@ -2,6 +2,10 @@
 
 A simple application to choose between two stations for fastest travel to or from a target station, using National Rail Enquiries web services.
 
+### Why?
+
+I live roughly mid-way between Bristol Temple Meads and Bristol Parkway stations, and often want to know which one it would be faster to travel to (or from).
+
 ### Getting Started
 
 Checkout this repo.
