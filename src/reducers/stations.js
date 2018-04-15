@@ -36,9 +36,20 @@ export default function(state: State = initialState, action: Action) {
     // sort choices by arrival time
     return state
       .set('loading', false)
-      .update('choices', c => c.sort((a, b) => compareHHMM(a.arr, b.arr)));
+      .update('choices', c => c.sort(bestDeparture));
   }
   default:
     return state;
   }
+}
+
+const bestDeparture = (a, b) => {
+  // First compare availability - having a departure is better than not having one!
+  if (!a.available && !b.available)
+    return 0;
+  if (!b.available)
+    return -1;
+  if (!a.available)
+    return 1;
+  return compareHHMM(a.arr, b.arr);
 }
