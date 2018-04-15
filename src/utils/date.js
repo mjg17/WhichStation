@@ -41,6 +41,10 @@ export function compareHHMM(a: string, b: string): number {
     return an - bn;
 }
 
+export function hhmmWithOffsetMins(t: string, mins: number): string {
+    return toHHMM(addMins(fromHHMM(t), mins));
+}
+
 if (0) {
   // Poor man's testing
   console.log(fromHHMM('00:30').toString());

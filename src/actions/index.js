@@ -7,7 +7,7 @@ import type { State, StationT, StationChoiceT } from '../types';
 
 import huxley from '../apis/huxley';
 
-import { fromHHMM, addMins, compareHHMM } from '../utils/date';
+import { fromHHMM, addMins, compareHHMM, hhmmWithOffsetMins } from '../utils/date';
 
 export const GET_CHOICES = 'GET_CHOICES';
 export const GET_CHOICES_SUCCESS = 'GET_CHOICES_SUCCESS';
@@ -60,7 +60,10 @@ const decodeDepartureResponse = (data: Object, directionDetails: Object) => {
     .filter(s => departAfter(s.std, directionDetails.fromOffset))
     .map(s => {
       const dest = huxley.findDestinationDetails(s, directionDetails.destCrs);
-      return { std: s.std, sta: dest.st, service: s }; // HANDLE directionDetails.destOffset
+      const sta = dest.st;
+      const dep = hhmmWithOffsetMins(s.std, -directionDetails.fromOffset);
+      const arr = hhmmWithOffsetMins(sta, directionDetails.destOffset);
+      return { arr, dep, std: s.std, sta: dest.st, service: s };
      })
     .sort(arrivalTime);
   if (!services.length) return unavailable;
