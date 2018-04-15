@@ -45,33 +45,43 @@ const parseChoices = (choices: string): List<StationChoiceT> => {
 const buildQueryString = (choice: StationChoiceT, direction: string, target: StationT): string => {
   direction = direction.toLowerCase();
   if (direction === 'to')
-    return `/fastest/${choice.crsCode}/to/${target.crsCode}`;
+    return `/departures/${choice.crsCode}/to/${target.crsCode}`;
   else if (direction === 'from')
-    return `/fastest/${target.crsCode}/to/${choice.crsCode}`;
+    return `/departures/${target.crsCode}/to/${choice.crsCode}`;
   throw new Error(`Unsupported direction '${direction}'`)
 }
 
-const decodeFastestResponse = (data: Object, target: StationT) => {
+const departAfter = (s, offset) => true; // WRITE ME
+const findDestinationDetails = (s, crsCode) => s.subsequentCallingPoints[0].callingPoint.find(cp => cp.crs.toUpperCase() === crsCode);
+const arrivalTime = (a, b) => ( a.sta < b.sta ); // COPE WITH MIDNIGHT
+
+const decodeDepartureResponse = (data: Object, departureOffset: number, arrivalOffset: number, targetCrs: string) => {
   const unavailable = { available: false, details: data };
   if (!data.areServicesAvailable) return unavailable;
-  const service = data.departures[0].service;
-  if (!service) return unavailable;
-  const targetCrs = target.crsCode.toUpperCase();
-  const targetDetails = service.subsequentCallingPoints[0].callingPoint.find(cp => cp.crs.toUpperCase() === targetCrs);
-  if (!targetDetails) return unavailable;
-  return { available: true, eta: targetDetails.st, details: targetDetails };
+  if (!data.trainServices) return unavailable;
+  targetCrs = targetCrs.toUpperCase();
+  const services = data.trainServices
+    .filter(s => departAfter(s, departureOffset))
+    .map(s => {
+      const dest = findDestinationDetails(s, targetCrs);
+      return { std: s.std, sta: dest.st, service: s }; // HANDLE arrivalOffset
+     })
+    .sort(arrivalTime);
+  if (!services.length) return unavailable;
+  const service = services[0];
+  return { available: true, ...service };
 }
 
 const ROOT_URL = 'https://huxley.apphb.com';
 console.log('ACCESS_TOKEN', ACCESS_TOKEN);
 
-const getFastest = (dispatch: Dispatch, index, choice: StationChoiceT, direction: string, target: StationT) => {
+const getBestDeparture = (dispatch: Dispatch, index, choice: StationChoiceT, direction: string, target: StationT) => {
   dispatch({ type: GET_CHOICE_DATA, payload: { index } });
   const queryString = buildQueryString(choice, direction, target);
   return axios.get(`${ROOT_URL}${queryString}?expand=true&accessToken=${ACCESS_TOKEN}`)
     .then(request => dispatch({
       type: GET_CHOICE_DATA_SUCCESS,
-      payload: { index, result: decodeFastestResponse(request.data, target) }, 
+      payload: { index, result: decodeDepartureResponse(request.data, choice.travelMinutes, 0, target.crsCode) },
     }))
 }
 
@@ -84,7 +94,7 @@ export function getDepartures(choices: string, direction: string, target: string
         payload: { choices: stationChoices, direction, target: stationTarget },
     });
     Promise.all(
-      stationChoices.map((choice, index) => getFastest(dispatch, index, choice, direction, stationTarget))
+      stationChoices.map((choice, index) => getBestDeparture(dispatch, index, choice, direction, stationTarget))
     ).then(
         () => dispatch({type: GET_CHOICES_SUCCESS, payload: {} })
       );
