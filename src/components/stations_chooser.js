@@ -2,10 +2,14 @@
 
 import React, { Component } from 'react';
 
-export default class StationsChooser extends Component {
+type Props = {
+};
+
+export default class StationsChooser extends Component<Props> {
   render() {
     return (
-      <div>Station chooser</div>
+      <h2>Station chooser</h2>
+
     );
   }
 }
