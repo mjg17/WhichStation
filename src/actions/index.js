@@ -5,8 +5,7 @@ import { List } from 'immutable';
 import { Station, StationChoice } from '../types';
 import type { State, StationT, StationChoiceT } from '../types';
 
-import axios from 'axios';
-import ACCESS_TOKEN from '../../access_token';
+import huxley from '../apis/huxley';
 
 export const GET_CHOICES = 'GET_CHOICES';
 export const GET_CHOICES_SUCCESS = 'GET_CHOICES_SUCCESS';
@@ -42,29 +41,19 @@ const parseChoices = (choices: string): List<StationChoiceT> => {
   return List(stations);
 }
 
-const buildQueryString = (choice: StationChoiceT, direction: string, target: StationT): string => {
-  direction = direction.toLowerCase();
-  if (direction === 'to')
-    return `/departures/${choice.crsCode}/to/${target.crsCode}`;
-  else if (direction === 'from')
-    return `/departures/${target.crsCode}/to/${choice.crsCode}`;
-  throw new Error(`Unsupported direction '${direction}'`)
-}
 
 const departAfter = (s, offset) => true; // WRITE ME
-const findDestinationDetails = (s, crsCode) => s.subsequentCallingPoints[0].callingPoint.find(cp => cp.crs.toUpperCase() === crsCode);
 const arrivalTime = (a, b) => ( a.sta < b.sta ); // COPE WITH MIDNIGHT
 
-const decodeDepartureResponse = (data: Object, departureOffset: number, arrivalOffset: number, targetCrs: string) => {
+const decodeDepartureResponse = (data: Object, directionDetails: Object) => {
   const unavailable = { available: false, details: data };
-  if (!data.areServicesAvailable) return unavailable;
-  if (!data.trainServices) return unavailable;
-  targetCrs = targetCrs.toUpperCase();
-  const services = data.trainServices
-    .filter(s => departAfter(s, departureOffset))
+  const trainServices = huxley.trainServices(data);
+  if (!trainServices) return unavailable;
+  const services = trainServices
+    .filter(s => departAfter(s, directionDetails.fromOffset))
     .map(s => {
-      const dest = findDestinationDetails(s, targetCrs);
-      return { std: s.std, sta: dest.st, service: s }; // HANDLE arrivalOffset
+      const dest = huxley.findDestinationDetails(s, directionDetails.destCrs);
+      return { std: s.std, sta: dest.st, service: s }; // HANDLE directionDetails.destOffset
      })
     .sort(arrivalTime);
   if (!services.length) return unavailable;
@@ -72,16 +61,22 @@ const decodeDepartureResponse = (data: Object, departureOffset: number, arrivalO
   return { available: true, ...service };
 }
 
-const ROOT_URL = 'https://huxley.apphb.com';
-console.log('ACCESS_TOKEN', ACCESS_TOKEN);
+const handleDirection = (choice: StationChoiceT, direction: string, target: StationT) => {
+  direction = direction.toLowerCase();
+  if (direction === 'to')
+    return { fromCrs: choice.crsCode, fromOffset: choice.travelMinutes, destCrs: target.crsCode, destOffset: 0 };
+  else if (direction === 'from')
+    return { fromCrs: target.crsCode, fromOffset: 0, destCrs: choice.crsCode, destOffset: choice.travelMinutes };
+  throw new Error(`Unsupported direction '${direction}'`)
+}
 
 const getBestDeparture = (dispatch: Dispatch, index, choice: StationChoiceT, direction: string, target: StationT) => {
   dispatch({ type: GET_CHOICE_DATA, payload: { index } });
-  const queryString = buildQueryString(choice, direction, target);
-  return axios.get(`${ROOT_URL}${queryString}?expand=true&accessToken=${ACCESS_TOKEN}`)
+  const directionDetails = handleDirection(choice, direction, target);
+  return huxley.getDepartures(directionDetails.fromCrs, directionDetails.destCrs)
     .then(request => dispatch({
       type: GET_CHOICE_DATA_SUCCESS,
-      payload: { index, result: decodeDepartureResponse(request.data, choice.travelMinutes, 0, target.crsCode) },
+      payload: { index, result: decodeDepartureResponse(request.data, directionDetails) },
     }))
 }
 
