@@ -26,7 +26,7 @@ const createStoreWithMiddleware = compose(
 ReactDOM.render(
   <Provider store={createStoreWithMiddleware(reducers)}>
     <Fragment>
-    <h1>Which station should I use?</h1>
+      <h1>Which station should I use?</h1>
       <BrowserRouter>
         <Switch>
           <Route exact path="/stationchooser" component={StationsChooser} />
@@ -34,6 +34,10 @@ ReactDOM.render(
           <Route path="/" render={props => <Redirect to="/stationchooser" />} />
         </Switch>
       </BrowserRouter>
+      <a href="http://www.nationalrail.co.uk/100296.aspx"><img src="https://huxley.unop.uk/NRE_Powered_logo.png" alt="powered by National Rail Enquiries" /></a>
+      &nbsp;
+      and
+      <a href="https://huxley.apphb.com/"><img src="https://huxley.apphb.com/huxley.png" alt="Huxley" title="Huxley" /></a>
     </Fragment>
   </Provider>
   , document.querySelector('.container'));

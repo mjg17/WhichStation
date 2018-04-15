@@ -12,3 +12,8 @@ Checkout this repo, install dependencies, then start the local web server proces
 > npm install
 > npm start
 ```
+
+### Powered by
+
+* National Rail Enquiries http://www.nationalrail.co.uk/100296.aspx
+* Huxley https://huxley.apphb.com/
