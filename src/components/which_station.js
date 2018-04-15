@@ -2,6 +2,7 @@
 
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import type { State } from '../types';
 import { getDepartures } from '../actions';
@@ -45,12 +46,12 @@ class WhichStation extends Component<Props> {
       return (<div><em>...loading...</em></div>);
     return (
       <Fragment>
-        <h1>Which station should I use?</h1>
         <h2>Your fastest journies { direction } { target.crsCode } are:</h2>
         { loading
           ? <div><em>...consulting National Rail Enquiries...</em></div>
           : this.renderChoices()
         }
+        <p><Link to="/stationchooser">Station chooser</Link></p>
       </Fragment>
     );
   }

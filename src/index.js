@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 import Immutable from 'immutable';
 
 import reducers from './reducers';
@@ -25,11 +25,15 @@ const createStoreWithMiddleware = compose(
 
 ReactDOM.render(
   <Provider store={createStoreWithMiddleware(reducers)}>
-    <BrowserRouter>
-      <Switch>
-        <Route exact path="/" component={StationsChooser} />
-        <Route path="/whichstation/:choices/:direction/:target" component={WhichStation} />
-      </Switch>
-    </BrowserRouter>
+    <Fragment>
+    <h1>Which station should I use?</h1>
+      <BrowserRouter>
+        <Switch>
+          <Route exact path="/stationchooser" component={StationsChooser} />
+          <Route path="/whichstation/:choices/:direction/:target" component={WhichStation} />
+          <Route path="/" render={props => <Redirect to="/stationchooser" />} />
+        </Switch>
+      </BrowserRouter>
+    </Fragment>
   </Provider>
   , document.querySelector('.container'));
