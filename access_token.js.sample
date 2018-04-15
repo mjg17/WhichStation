@@ -1,0 +1,4 @@
+// DO NOT CHECK ME INTO SOURCE CONTROL when copied to access_token.js !!
+
+const ACCESS_TOKEN = 'YourTokenGoesHere';
+export default ACCESS_TOKEN;
