@@ -19,6 +19,8 @@ Install dependencies, then start the local web server process with the following
 ```
 > git clone https://github.com/mjg17/WhichStation.git
 > cd WhichStation
+> cp access_token.js.sample access_token.js
+# edit access_token.js to install token as described above
 > npm install
 > npm start
 ```
