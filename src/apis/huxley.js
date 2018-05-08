@@ -28,4 +28,25 @@ export function findDestinationDetails(service: Object, destCrs: string): Object
   return result;
 }
 
-export default { getDepartures, trainServices, findDestinationDetails };
+let crsTable;
+function getCrsTable(): Object {
+  if (crsTable)
+    return Promise.resolve(crsTable);
+  return axios.get(`${ROOT_URL}/crs?accessToken=${ACCESS_TOKEN}`)
+    .then(({data: crsArray}) => {
+      crsTable = crsArray.reduce((map, station) => {
+        map[station.crsCode] = station;
+        return map;
+      }, {});
+      console.log('crsTable', crsTable);
+      return crsTable;
+    });
+}
+
+export function getStationByCRS(crsCode: string): Object {
+  console.log('getStationByCRS request for', crsCode);
+  return getCrsTable()
+    .then(crsTable => crsTable[crsCode]);
+}
+
+export default { getDepartures, trainServices, findDestinationDetails, getStationByCRS };

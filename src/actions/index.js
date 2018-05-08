@@ -13,12 +13,14 @@ export const GET_CHOICES = 'GET_CHOICES';
 export const GET_CHOICES_SUCCESS = 'GET_CHOICES_SUCCESS';
 export const GET_CHOICE_DATA = 'GET_CHOICE_DATA';
 export const GET_CHOICE_DATA_SUCCESS = 'GET_CHOICE_DATA_SUCCESS';
+export const GET_CRS = 'GET_CRS';
 
 type ActionType =
   | 'GET_CHOICES'
   | 'GET_CHOICES_SUCCESS'
   | 'GET_CHOICE_DATA'
   | 'GET_CHOICE_DATA_SUCCESS'
+  | 'GET_CRS'
   ;
 export type Action = {| type: ActionType, payload: any |};
 
@@ -83,7 +85,8 @@ const handleDirection = (choice: StationChoiceT, direction: string, target: Stat
 const getBestDeparture = (dispatch: Dispatch, index, choice: StationChoiceT, direction: string, target: StationT) => {
   dispatch({ type: GET_CHOICE_DATA, payload: { index } });
   const directionDetails = handleDirection(choice, direction, target);
-  return huxley.getDepartures(directionDetails.fromCrs, directionDetails.destCrs)
+  return dispatch(expandCRS(choice.crsCode))
+    .then(stationName => huxley.getDepartures(directionDetails.fromCrs, directionDetails.destCrs))
     .then(request => dispatch({
       type: GET_CHOICE_DATA_SUCCESS,
       payload: { index, result: decodeDepartureResponse(request.data, directionDetails) },
@@ -104,4 +107,19 @@ export function getDepartures(choices: string, direction: string, target: string
         () => dispatch({type: GET_CHOICES_SUCCESS, payload: {} })
       );
   };
+}
+
+export function expandCRS(crsCode: string) {
+  return (dispatch: Dispatch) => {
+    crsCode = crsCode.toUpperCase();
+    return huxley.getStationByCRS(crsCode)
+      .then(stationDetails => {
+        console.log('Got station', stationDetails);
+        dispatch({
+          type: GET_CRS,
+          payload: { ...stationDetails },
+        });
+        return stationDetails.stationName;
+      });
+  }
 }
