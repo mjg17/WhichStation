@@ -28,19 +28,23 @@ export function findDestinationDetails(service: Object, destCrs: string): Object
   return result;
 }
 
+let getCrs;
 let crsTable;
 function getCrsTable(): Object {
   if (crsTable)
     return Promise.resolve(crsTable);
-  return axios.get(`${ROOT_URL}/crs?accessToken=${ACCESS_TOKEN}`)
-    .then(({data: crsArray}) => {
-      crsTable = crsArray.reduce((map, station) => {
-        map[station.crsCode] = station;
-        return map;
-      }, {});
-      console.log('crsTable', crsTable);
+  if (!getCrs)
+    getCrs = axios.get(`${ROOT_URL}/crs?accessToken=${ACCESS_TOKEN}`);
+  return getCrs.then(r => {
+    if (crsTable) // check again here since we may be doubled-up on the original axios.get
       return crsTable;
-    });
+    crsTable = r.data.reduce((map, station) => {
+      map[station.crsCode] = station;
+      return map;
+    }, {});
+    console.log('crsTable', crsTable);
+    return crsTable;
+  });
 }
 
 export function getStationByCRS(crsCode: string): Object {
