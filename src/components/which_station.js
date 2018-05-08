@@ -46,7 +46,7 @@ class WhichStation extends Component<Props> {
       return (<div><em>...loading...</em></div>);
     return (
       <Fragment>
-        <h2>Your fastest journies { direction } { target.crsCode } are:</h2>
+        <h2>Your fastest journies { direction } { target.stationName || target.crsCode } are:</h2>
         { loading
           ? <div><em>...consulting National Rail Enquiries...</em></div>
           : this.renderChoices()

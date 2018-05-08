@@ -95,17 +95,21 @@ const getBestDeparture = (dispatch: Dispatch, index, choice: StationChoiceT, dir
 
 export function getDepartures(choices: string, direction: string, target: string) {
   const stationChoices = parseChoices(choices);
-  const stationTarget = Station({crsCode: target});
+  let stationTarget = Station({crsCode: target});
   return (dispatch: Dispatch) => {
-    dispatch({
-        type: GET_CHOICES,
-        payload: { choices: stationChoices, direction, target: stationTarget },
-    });
-    Promise.all(
-      stationChoices.map((choice, index) => getBestDeparture(dispatch, index, choice, direction, stationTarget))
-    ).then(
-        () => dispatch({type: GET_CHOICES_SUCCESS, payload: {} })
-      );
+    dispatch(expandCRS(stationTarget.crsCode))
+      .then(stationName => {
+        stationTarget = stationTarget.set('stationName', stationName);
+        dispatch({
+            type: GET_CHOICES,
+            payload: { choices: stationChoices, direction, target: stationTarget },
+        });
+        Promise.all(
+          stationChoices.map((choice, index) => getBestDeparture(dispatch, index, choice, direction, stationTarget))
+        ).then(
+            () => dispatch({type: GET_CHOICES_SUCCESS, payload: {} })
+          );
+      });
   };
 }
 
